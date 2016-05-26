@@ -108,7 +108,7 @@ public class Main
 
 		/** Runs main game loop */
 		mainGame.resetGame();
-		mainGame.gameLoop();
+		//mainGame.gameLoop();
 
 		System.out.println("My Old Friend");
 	}

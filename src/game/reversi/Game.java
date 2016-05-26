@@ -18,7 +18,7 @@ public class Game
 	/**
 	 * Show debug messages
 	 */
-	private boolean showDebug = false;
+	private final boolean showDebug = false;
 
 	/**
 	 * Show the current
@@ -149,64 +149,50 @@ public class Game
 		p2_label_player.setText("Not Your Turn");
 		updateScoreLabel(p1_label_score);
 		updateScoreLabel(p2_label_score);
+
+		/** Check board for possible moves */
+		ai.checkBoard("white", p1_discs);
 	}
 
 	/**
-	 * Is the main game loop to run all the logic
+	 * Gets the coords of the square recently pressed
+	 *
+	 * @param row row value
+	 * @param col column value
 	 */
-	public void gameLoop()
+	public void makeMove(int row, int col, int boardNum)
 	{
-		gameWon = false;
-		boolean autoPlay = false;
+		currentRow = row;
+		currentCol = col;
+		currentBoard = boardNum;
+		printDebug("current row col board: " + currentRow + " " + currentCol + " " + currentBoard);
 
-		do
+		/** Check which player's turn */
+		if (player == 1 && currentBoard == 1) // Player 1  Black
 		{
-			if (autoPlay)
+			printDebug("Player 1");
+			/** If there is a black disc around the selected square */
+			if (ai.checkArea(currentRow, currentCol, "white", p1_discs, false) != 0)
 			{
-				if (player == 1)
-				{
-					ai.makeGreedyMove("white", p1_discs);
-				} else // Player 2
-				{
-					ai.makeGreedyMove("black", p2_discs);
-				}
+				printDebug("goob");
 				changePlayer();
-
-				sleep(200 - 100);
-			} else
-			{
-				/** If square has been clicked */
-				if (currentRow >= 0 && currentCol >= 0)
-				{
-					/** Check which player's turn */
-					if (player == 1 && currentBoard == 1) // Player 1  Black
-					{
-						printDebug("Player 1");
-						/** If there is a black disc around the selected square */
-						if (ai.checkArea(currentRow, currentCol, "white", p1_discs, false) != 0)
-						{
-							changePlayer();
-						}
-					} else if (player == 2 && currentBoard == 2) // Player 2  White
-					{
-						printDebug("Player 2");
-						/** If there is a white disc around the selected square */
-						if (ai.checkArea(currentRow, currentCol, "black", p2_discs, false) != 0)
-						{
-							changePlayer();
-						}
-					}
-
-					/** Reset temp variable */
-					currentRow = -1;
-					currentCol = -1;
-					currentBoard = -1;
-				}
 			}
+		} else if (player == 2 && currentBoard == 2) // Player 2  White
+		{
+			printDebug("Player 2");
+			/** If there is a white disc around the selected square */
+			if (ai.checkArea(currentRow, currentCol, "black", p2_discs, false) != 0)
+			{
+				changePlayer();
+			}
+		}
+	}
 
-			sleep(100);
-		} while (!gameWon);
-
+	/**
+	 * Runs if the game has been won
+	 */
+	public void gameIsWon()
+	{
 		/** Game has ended */
 		System.out.println("Won");
 		if (countBlack(p1_discs) > countWhite(p1_discs))
@@ -262,43 +248,35 @@ public class Game
 	{
 		if (player == 1) // Player one
 		{
+			ai.resetPotentialTiles(p1_discs);
 			p2_discs = syncBoards(p1_discs, p2_discs);
 			player = 2;
 
 			p1_label_player.setText("Not Your Turn");
 			p2_label_player.setText("Your Turn (White)");
-			updateScoreLabel(p1_label_score);
-			updateScoreLabel(p2_label_score);
 
 			/** Check if there are any possible white moves */
-			gameWon = !ai.checkBoard("black", p1_discs);
+			gameWon = !ai.checkBoard("black", p2_discs);
 		} else // Player two
 		{
+			ai.resetPotentialTiles(p2_discs);
 			p1_discs = syncBoards(p2_discs, p1_discs);
 			player = 1;
 
 			p1_label_player.setText("Your Turn (Black)");
 			p2_label_player.setText("Not Your Turn");
-			updateScoreLabel(p1_label_score);
-			updateScoreLabel(p2_label_score);
 
 			/** Check if there are any possible black moves */
 			gameWon = !ai.checkBoard("white", p1_discs);
 		}
-	}
 
-	/**
-	 * Gets the coords of the square recently pressed
-	 *
-	 * @param row row value
-	 * @param col column value
-	 */
-	public void setCurrentCoods(int row, int col, int boardNum)
-	{
-		currentRow = row;
-		currentCol = col;
-		currentBoard = boardNum;
-		printDebug("current row col board: " + currentRow + " " + currentCol + " " + currentBoard);
+		updateScoreLabel(p1_label_score);
+		updateScoreLabel(p2_label_score);
+
+		if (gameWon)
+		{
+			gameIsWon();
+		}
 	}
 
 	/**
@@ -349,6 +327,16 @@ public class Game
 			}
 		}
 		return number;
+	}
+
+	/**
+	 * Gets the current player
+	 *
+	 * @return Current player
+	 */
+	public int getPlayer()
+	{
+		return player;
 	}
 
 	/** Helper functions */

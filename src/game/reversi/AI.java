@@ -74,21 +74,20 @@ public class AI
 	 */
 	public boolean checkBoard(String color, Disc[][] board)
 	{
+		boolean check = false;
 		for (int column = 0; column < 8; column++)
 		{
 			for (int row = 0; row < 8; row++)
 			{
 				if (checkArea(row, column, color, board, true) > 0)
 				{
-					game.printDebug("Moves: " + true);
-					return true;
+					check = true;
 				}
 			}
 		}
 
-		game.printDebug("Moves: " + false);
-		/** If no possible moves */
-		return false;
+		game.printDebug("Moves: " + check);
+		return check;
 	}
 
 	/**
@@ -109,7 +108,9 @@ public class AI
 		int noOfTiles = 0;
 
 		/** If chosen space is empty */
-		if (board[currentRow][currentCol].getState().equals("empty"))
+		if (board[currentRow][currentCol].getState().equals("empty") ||
+				    board[currentRow][currentCol].getState().equals("pBlack") ||
+				    board[currentRow][currentCol].getState().equals("pWhite"))
 		{
 			/** From -1 to 1 on y-axis */
 			for (int row = -1; row < 2; row++)
@@ -170,7 +171,9 @@ public class AI
 			{
 				colDir += colDirUnit;
 				rowDir += rowDirUnit;
-			} else if (board[currentRow + colDir][currentCol + rowDir].getState().equals("empty")) // If empty
+			} else if (board[currentRow + colDir][currentCol + rowDir].getState().equals("empty") ||
+					           board[currentRow + colDir][currentCol + rowDir].getState().equals("pWhite") ||
+					           board[currentRow + colDir][currentCol + rowDir].getState().equals("pBlack")) // If empty
 			{
 				game.printDebug("Invalid search path - empty square\n");
 				return 0;
@@ -178,6 +181,16 @@ public class AI
 			{
 				/** Found a valid move */
 				game.printDebug("Found valid search path\n");
+
+				if (color.equals("white"))
+				{
+					board[currentRow][currentCol].setState("pBlack");
+					game.printDebug("foo");
+				} else if (color.equals("black"))
+				{
+					board[currentRow][currentCol].setState("pWhite");
+					game.printDebug("bar");
+				}
 
 				if (!toCount)
 				{
@@ -217,5 +230,20 @@ public class AI
 		}
 		game.printDebug("Invalid search path - out of bounds\n");
 		return 0;
+	}
+
+	public void resetPotentialTiles(Disc[][] board)
+	{
+		for (int column = 0; column < 8; column++)
+		{
+			for (int row = 0; row < 8; row++)
+			{
+				if (board[row][column].getState().equals("pBlack") ||
+						    board[row][column].getState().equals("pWhite"))
+				{
+					board[row][column].setState("empty");
+				}
+			}
+		}
 	}
 }
