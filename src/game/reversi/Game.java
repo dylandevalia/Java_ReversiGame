@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 // TODO Customisation
 // TODO Change size of board?
 // TODO AI difficulty
+// TODO Make event-driven
 
 public class Game
 {
